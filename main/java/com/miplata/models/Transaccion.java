@@ -45,3 +45,4 @@ public class Transaccion {
                 valor, saldoResultante, descripcion);
     }
 }
+// verifiación del flujo de transacciones
