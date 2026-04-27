@@ -10,14 +10,43 @@ import com.miplata.utils.Formato;
 import java.util.List;
 
 /**
- * Administración de usuarios — CRUD completo.
+ * Administración de usuarios — CRUD completo + Historias de Jira.
+ *
+ * MIP-2  — Registrar nuevos clientes con sus datos personales y asignarles una cuenta.
+ * MIP-3  — Editar los datos de un cliente existente.
+ * MIP-4  — Bloquear o desbloquear el acceso de un cliente.
+ * MIP-5  — Ver el historial completo de transacciones de un cliente.
+ * MIP-9  — Cambiar mi PIN desde el cajero.
+ * MIP-10 — Configurar el número máximo de intentos fallidos y el tiempo de bloqueo.
+ * MIP-18 — Registrar la recarga de efectivo en el cajero.
+ * MIP-20 — Configurar los límites diarios de retiro por tipo de cliente.
+ * MIP-21 — Colocar el cajero en modo mantenimiento.
+ * MIP-23 — Exportar el reporte de todas las transacciones del día/semana/mes.
+ * MIP-24 — Ver un listado de transacciones marcadas como inusuales (sospechosas).
+ * MIP-25 — Ver el uptime y los incidentes registrados del cajero.
+ * MIP-27 — Cancelar cualquier operación antes de confirmarla.
+ * MIP-28 — Registrar en log cada error técnico con código y timestamp.
+ * MIP-29 — Reversar una transacción fallida que descontó saldo.
+ * MIP-30 — Visualizar y gestionar los incidentes abiertos de un cajero.
  */
 public class AdminUI {
 
     private final BancoService banco;
 
+    // ── Nuevas UIs para las historias de Jira ─────────────────
+    private final HistorialUI   historialUI;
+    private final SeguridadUI   seguridadUI;
+    private final CajeroAdminUI cajeroAdminUI;
+    private final ReportesUI    reportesUI;
+    private final SoporteUI     soporteUI;
+
     public AdminUI(BancoService banco) {
-        this.banco = banco;
+        this.banco         = banco;
+        this.historialUI   = new HistorialUI(banco);
+        this.seguridadUI   = new SeguridadUI(banco);
+        this.cajeroAdminUI = new CajeroAdminUI(banco);
+        this.reportesUI    = new ReportesUI(banco);
+        this.soporteUI     = new SoporteUI(banco);
     }
 
     public void mostrarAdmin() {
@@ -31,18 +60,32 @@ public class AdminUI {
             System.out.println("  [5] Desbloquear cliente");
             System.out.println("  [6] Ver cuentas de un cliente");
             System.out.println("  [7] Agregar cuenta a un cliente");
+            Formato.separador('-', 60);
+            System.out.println("  [8]  Ver historial de transacciones     (MIP-5)");
+            System.out.println("  [9]  Cambiar PIN                        (MIP-9)");
+            System.out.println("  [10] Configurar política de seguridad   (MIP-10)");
+            System.out.println("  [11] Administración del cajero          (MIP-18/20/21)");
+            System.out.println("  [12] Reportes y auditoría               (MIP-23/24/25)");
+            System.out.println("  [13] Soporte y errores                  (MIP-27/28/29/30)");
+            Formato.separador();
             System.out.println("  [0] Volver");
             Formato.separador();
 
-            switch (Consola.leerOpcion("Opción", 0, 7)) {
-                case 1 -> listarClientes();
-                case 2 -> agregarCliente();
-                case 3 -> editarCliente();
-                case 4 -> eliminarCliente();
-                case 5 -> desbloquearCliente();
-                case 6 -> verCuentasCliente();
-                case 7 -> agregarCuentaACliente();
-                case 0 -> activo = false;
+            switch (Consola.leerOpcion("Opción", 0, 13)) {
+                case 1  -> listarClientes();
+                case 2  -> agregarCliente();
+                case 3  -> editarCliente();
+                case 4  -> eliminarCliente();
+                case 5  -> desbloquearCliente();
+                case 6  -> verCuentasCliente();
+                case 7  -> agregarCuentaACliente();
+                case 8  -> historialUI.mostrarHistorialAdmin();
+                case 9  -> seguridadUI.cambiarPin();
+                case 10 -> seguridadUI.configurarPoliticaSeguridad();
+                case 11 -> cajeroAdminUI.mostrarMenuCajero();
+                case 12 -> reportesUI.mostrarMenuReportes();
+                case 13 -> soporteUI.mostrarMenuSoporte();
+                case 0  -> activo = false;
             }
         }
     }
@@ -69,7 +112,7 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 2. Agregar ────────────────────────────────────────────
+    // ── 2. Agregar — MIP-2 ────────────────────────────────────
     private void agregarCliente() {
         Formato.titulo("AGREGAR NUEVO CLIENTE");
         try {
@@ -103,7 +146,7 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 3. Editar ─────────────────────────────────────────────
+    // ── 3. Editar — MIP-3 ─────────────────────────────────────
     private void editarCliente() {
         Formato.titulo("EDITAR CLIENTE");
         Cliente c = seleccionarCliente();
@@ -146,7 +189,7 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 5. Desbloquear ────────────────────────────────────────
+    // ── 5. Desbloquear — MIP-4 ───────────────────────────────
     private void desbloquearCliente() {
         Formato.titulo("DESBLOQUEAR CLIENTE");
         List<Cliente> bloqueados = banco.getClienteRepo().obtenerBloqueados();
