@@ -8,10 +8,7 @@ import com.miplata.utils.Consola;
 import com.miplata.utils.Formato;
 
 import java.util.List;
-
-/**
- * Administración de usuarios — CRUD completo.
- */
+// feat(MIP-2): Registrar nuevos clientes y asignarles una cuenta
 public class AdminUI {
 
     private final BancoService banco;
