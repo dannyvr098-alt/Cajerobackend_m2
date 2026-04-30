@@ -10,8 +10,6 @@ import com.miplata.utils.Formato;
 import java.util.List;
 
 /**
- * Administración de usuarios — CRUD completo + Historias de Jira.
- *
  * MIP-2  — Registrar nuevos clientes con sus datos personales y asignarles una cuenta.
  * MIP-3  — Editar los datos de un cliente existente.
  * MIP-4  — Bloquear o desbloquear el acceso de un cliente.
@@ -31,9 +29,7 @@ import java.util.List;
  */
 public class AdminUI {
 
-    private final BancoService banco;
-
-    // ── Nuevas UIs para las historias de Jira ─────────────────
+    private final BancoService  banco;
     private final HistorialUI   historialUI;
     private final SeguridadUI   seguridadUI;
     private final CajeroAdminUI cajeroAdminUI;
@@ -90,11 +86,9 @@ public class AdminUI {
         }
     }
 
-    // ── 1. Listar ─────────────────────────────────────────────
     private void listarClientes() {
         Formato.titulo("LISTA DE CLIENTES");
         List<Cliente> todos = banco.obtenerTodosClientes();
-
         if (todos.isEmpty()) {
             System.out.println("  No hay clientes registrados.");
         } else {
@@ -112,7 +106,6 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 2. Agregar — MIP-2 ────────────────────────────────────
     private void agregarCliente() {
         Formato.titulo("AGREGAR NUEVO CLIENTE");
         try {
@@ -122,12 +115,10 @@ public class AdminUI {
             String username = Consola.leerTexto("Nombre de usuario");
             String password = Consola.leerPassword("Contraseña");
             String confirm  = Consola.leerPassword("Confirmar contraseña");
-
             if (!password.equals(confirm)) {
                 System.out.println("  ✗  Las contraseñas no coinciden.");
                 Consola.pausar(); return;
             }
-
             System.out.println("\n  Tipo de cuenta inicial:");
             System.out.println("  [1] Ahorros  [2] Corriente  [3] Crédito");
             int opTipo = Consola.leerOpcion("Opción", 1, 3);
@@ -137,7 +128,6 @@ public class AdminUI {
                 default -> TipoCuenta.AHORROS;
             };
             double valor = Consola.leerMonto(tipo == TipoCuenta.CREDITO ? "Cupo de crédito" : "Saldo inicial");
-
             Cliente nuevo = banco.registrarCliente(id, nombre, celular, username, password, tipo, valor);
             System.out.println("\n  ✔  Cliente creado: " + nuevo.getNombreCompleto() + " (@" + nuevo.getUsername() + ")");
         } catch (Exception e) {
@@ -146,17 +136,14 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 3. Editar — MIP-3 ─────────────────────────────────────
     private void editarCliente() {
         Formato.titulo("EDITAR CLIENTE");
         Cliente c = seleccionarCliente();
         if (c == null) return;
-
         System.out.println("  (Deja en blanco para mantener el valor actual)\n");
         String id     = Consola.leerTexto("Identificación [" + c.getIdentificacion() + "]");
         String nombre = Consola.leerTexto("Nombre         [" + c.getNombreCompleto() + "]");
         String cel    = Consola.leerTexto("Celular        [" + c.getCelular() + "]");
-
         try {
             c.actualizarPerfil(
                     id.isEmpty()     ? null : id,
@@ -169,15 +156,12 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 4. Eliminar ───────────────────────────────────────────
     private void eliminarCliente() {
         Formato.titulo("ELIMINAR CLIENTE");
         Cliente c = seleccionarCliente();
         if (c == null) return;
-
-        System.out.println("  Cliente a eliminar: " + c.getNombreCompleto() + " (@" + c.getUsername() + ")");
+        System.out.println("  Cliente: " + c.getNombreCompleto() + " (@" + c.getUsername() + ")");
         System.out.println("  ADVERTENCIA: Se eliminarán también todas sus cuentas.");
-
         if (Consola.confirmar("¿Confirmar eliminación?")) {
             try {
                 banco.eliminarCliente(c.getId());
@@ -189,7 +173,6 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 5. Desbloquear — MIP-4 ───────────────────────────────
     private void desbloquearCliente() {
         Formato.titulo("DESBLOQUEAR CLIENTE");
         List<Cliente> bloqueados = banco.getClienteRepo().obtenerBloqueados();
@@ -197,12 +180,10 @@ public class AdminUI {
             System.out.println("  No hay clientes bloqueados.");
             Consola.pausar(); return;
         }
-
         System.out.println("  Clientes bloqueados:");
         for (int i = 0; i < bloqueados.size(); i++)
-            System.out.printf("  [%d] %s (@%s)%n", i+1,
+            System.out.printf("  [%d] %s (@%s)%n", i + 1,
                     bloqueados.get(i).getNombreCompleto(), bloqueados.get(i).getUsername());
-
         int idx = Consola.leerOpcion("Selecciona cliente", 1, bloqueados.size()) - 1;
         try {
             banco.desbloquearCliente(bloqueados.get(idx).getId());
@@ -213,30 +194,25 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── 6. Ver cuentas ────────────────────────────────────────
     private void verCuentasCliente() {
         Formato.titulo("CUENTAS DE UN CLIENTE");
         Cliente c = seleccionarCliente();
         if (c == null) return;
-
         List<Cuenta> cuentas = banco.getCuentaRepo().obtenerPorPropietario(c.getId());
         System.out.println("  Cliente: " + c.getNombreCompleto());
         Formato.separador('-', 60);
-        if (cuentas.isEmpty()) {
+        if (cuentas.isEmpty())
             System.out.println("  Sin cuentas registradas.");
-        } else {
+        else
             for (Cuenta cu : cuentas)
                 System.out.println("  → " + cu);
-        }
         Consola.pausar();
     }
 
-    // ── 7. Agregar cuenta ─────────────────────────────────────
     private void agregarCuentaACliente() {
         Formato.titulo("AGREGAR CUENTA A CLIENTE");
         Cliente c = seleccionarCliente();
         if (c == null) return;
-
         System.out.println("  [1] Ahorros  [2] Corriente  [3] Crédito");
         int op = Consola.leerOpcion("Tipo de cuenta", 1, 3);
         TipoCuenta tipo = switch (op) {
@@ -245,7 +221,6 @@ public class AdminUI {
             default -> TipoCuenta.AHORROS;
         };
         double valor = Consola.leerMonto(tipo == TipoCuenta.CREDITO ? "Cupo de crédito" : "Saldo inicial");
-
         try {
             banco.agregarCuentaACliente(c.getId(), tipo, valor);
             System.out.println("  ✔  Cuenta creada para " + c.getNombreCompleto() + ".");
@@ -255,19 +230,16 @@ public class AdminUI {
         Consola.pausar();
     }
 
-    // ── Helper: seleccionar cliente de la lista ───────────────
     private Cliente seleccionarCliente() {
         List<Cliente> todos = banco.obtenerTodosClientes();
         if (todos.isEmpty()) {
             System.out.println("  No hay clientes registrados.");
             Consola.pausar(); return null;
         }
-
         System.out.println("  Clientes registrados:");
         for (int i = 0; i < todos.size(); i++)
-            System.out.printf("  [%d] %s (@%s)%n", i+1,
+            System.out.printf("  [%d] %s (@%s)%n", i + 1,
                     todos.get(i).getNombreCompleto(), todos.get(i).getUsername());
-
         int idx = Consola.leerOpcion("Selecciona cliente", 1, todos.size()) - 1;
         return todos.get(idx);
     }
