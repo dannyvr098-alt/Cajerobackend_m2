@@ -147,7 +147,7 @@ public class ReportesUI {
         System.out.println("  Tiempo inactivo:      " + horasIncidente + " horas");
         System.out.println("  Total interrupciones: " + INCIDENTES.length);
         Formato.separador();
-        System.out.printf("  %-10s %-25s %-20s %-20s %s%n",
+        Syste+m.out.printf("  %-10s %-25s %-20s %-20s %s%n",
                 "ID", "Tipo", "Inicio", "Fin", "Estado");
         Formato.separador('-', 85);
         for (String[] inc : INCIDENTES)
